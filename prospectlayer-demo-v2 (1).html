@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProspectLayer — Devan Ramage · C&W Edmonton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d09;--surface:#0f1a11;--surface2:#141f16;--border:#1a2b1d;--accent:#4baa6e;--accent-dim:#1e4a2d;--accent-glow:rgba(75,170,110,0.10);--text:#ddeee2;--muted:#5a7d62;--dim:#2a3d2d;--warn:#e8a44a;--danger:#e85a4a;--white:#f0f7f2;--mono:'DM Mono',monospace;--sans:'Syne',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;opacity:0.35;pointer-events:none;z-index:0;}
+.topbar{position:relative;z-index:10;height:52px;background:rgba(8,13,9,0.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:0;flex-shrink:0;}
+.logo{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--accent);letter-spacing:.06em;display:flex;align-items:center;gap:8px;margin-right:20px;}
+.logo-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.cw-badge{font-size:10px;color:#6a8fcf;border:1px solid #1a2a4a;background:#0a0f1a;padding:3px 10px;border-radius:3px;letter-spacing:.05em;margin-right:auto;}
+.topbar-nav{display:flex;gap:2px;margin-right:auto;}
+.nav-btn{font-family:var(--mono);font-size:11px;color:var(--muted);background:transparent;border:none;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:.04em;transition:all .15s;}
+.nav-btn:hover,.nav-btn.active{color:var(--accent);background:var(--accent-glow);}
+.user-pill{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;}
+.user-name{font-size:12px;color:var(--text);}
+.user-role{font-size:10px;color:var(--muted);}
+.avatar{width:28px;height:28px;background:var(--accent-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent);font-weight:600;}
+.shell{position:relative;z-index:1;display:flex;flex:1;overflow:hidden;}
+.sidebar{width:210px;background:rgba(15,26,17,0.8);border-right:1px solid var(--border);padding:20px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;}
+.nav-section-label{font-size:9px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;padding:0 8px;margin:10px 0 4px;}
+.side-btn{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;border:1px solid transparent;transition:all .15s;background:none;width:100%;text-align:left;}
+.side-btn:hover{color:var(--text);background:var(--surface);}
+.side-btn.active{color:var(--accent);background:var(--accent-glow);border-color:var(--border);}
+.side-icon{font-size:13px;width:16px;text-align:center;}
+.side-count{margin-left:auto;font-size:10px;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:3px;}
+.run-btn-side{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:6px;font-family:var(--mono);font-size:12px;color:#000;cursor:pointer;border:none;background:var(--accent);width:100%;margin-top:auto;font-weight:700;justify-content:center;transition:all .15s;}
+.run-btn-side:hover{background:#5dc47e;transform:translateY(-1px);}
+.main{flex:1;overflow-y:auto;padding:28px 32px;}
+.view{display:none;animation:fadeUp .2s ease;}
+.view.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;}
+.page-title{font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white);}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.stat-val{font-family:var(--sans);font-size:30px;font-weight:800;color:var(--white);line-height:1;}
+.stat-delta{font-size:11px;color:var(--accent);margin-top:5px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-hd{padding:13px 18px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text);}
+.card-body{padding:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
+td{padding:10px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr.prospect-row:hover td{background:rgba(75,170,110,.05);cursor:pointer;}
+tr.prospect-row.selected td{background:rgba(75,170,110,.08);}
+.etag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:3px;}
+.ev{background:rgba(75,170,110,.15);color:var(--accent);}
+.es{background:rgba(232,164,74,.12);color:var(--warn);}
+.en{background:rgba(255,255,255,.04);color:var(--dim);}
+.stars{color:var(--warn);font-size:11px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:6px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all .15s;border:none;letter-spacing:.03em;}
+.btn-p{background:var(--accent);color:#000;font-weight:700;}
+.btn-p:hover{background:#5dc47e;transform:translateY(-1px);}
+.btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-g:hover{color:var(--text);border-color:var(--dim);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+.btn-xs{padding:3px 8px;font-size:10px;}
+.match-list{display:flex;flex-direction:column;gap:10px;}
+.match-item{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;transition:border-color .15s;}
+.match-item:hover{border-color:var(--accent-dim);}
+.match-biz{font-size:13px;color:var(--white);font-weight:500;margin-bottom:3px;}
+.match-meta{font-size:11px;color:var(--muted);margin-bottom:5px;}
+.signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.sig{font-size:10px;padding:2px 7px;border-radius:3px;letter-spacing:.03em;}
+.sg{background:rgba(75,170,110,.12);color:var(--accent);}
+.sw{background:rgba(232,164,74,.10);color:var(--warn);}
+.score{font-family:var(--sans);font-size:24px;font-weight:800;color:var(--accent);text-align:right;line-height:1;}
+.score span{font-size:10px;color:var(--muted);display:block;font-family:var(--mono);font-weight:400;}
+.listing-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.listing-hd{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface2);cursor:pointer;}
+.listing-name{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--white);}
+.listing-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.lbadge{font-size:10px;padding:3px 10px;border-radius:12px;letter-spacing:.05em;}
+.lb-active{background:rgba(75,170,110,.15);color:var(--accent);border:1px solid var(--accent-dim);}
+.listing-body{padding:16px 18px;}
+.opp{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.opp:last-child{border-bottom:none;}
+.opp-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.opp-title{font-size:13px;color:var(--white);margin-bottom:3px;}
+.opp-detail{font-size:11px;color:var(--muted);}
+.opp-time{font-size:10px;color:var(--dim);white-space:nowrap;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:700px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:28px;animation:slideUp .2s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-family:var(--sans);font-size:20px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:22px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+.terminal{background:#040806;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-size:11px;line-height:1.9;height:200px;overflow-y:auto;margin:14px 0;font-family:var(--mono);}
+.tl{color:var(--muted);}
+.tok{color:var(--accent);}
+.twarn{color:var(--warn);}
+.tdim{color:var(--dim);}
+.tcounter{color:#7ec8a0;font-weight:500;}
+.prog-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.prog-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s ease;}
+.prog-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.zone-map{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.zone{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-size:11px;color:var(--dim);transition:all .3s;}
+.zone.scanning{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);animation:zpulse .8s ease-in-out infinite;}
+.zone.done{border-color:var(--accent-dim);color:var(--accent);background:rgba(75,170,110,.06);}
+.zone-count{font-family:var(--sans);font-size:18px;font-weight:700;color:var(--white);margin-top:2px;}
+@keyframes zpulse{0%,100%{opacity:1}50%{opacity:.6}}
+.prospect-panel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px;display:none;}
+.prospect-panel.open{display:block;animation:fadeUp .2s ease;}
+.panel-title{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--white);margin-bottom:10px;}
+.gen-row{font-size:11px;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.gen-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink .6s ease-in-out infinite;}
+.email-draft{background:#040806;border:1px solid var(--border);border-radius:6px;padding:16px;font-size:12px;line-height:1.8;min-height:160px;}
+.email-field{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.efl{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;display:inline-block;width:44px;}
+.email-body-text{color:var(--text);margin-top:10px;white-space:pre-wrap;}
+.email-cursor{display:inline-block;width:2px;height:13px;background:var(--accent);animation:blink .7s step-end infinite;vertical-align:middle;margin-left:1px;}
+.upload-zone{border:1px dashed var(--dim);border-radius:8px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:18px;}
+.upload-zone:hover{border-color:var(--accent);background:var(--accent-glow);}
+.form-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;display:block;}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:9px 11px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;transition:border-color .15s;margin-bottom:12px;}
+.form-input:focus{border-color:var(--accent);}
+.form-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:9px 11px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;-webkit-appearance:none;margin-bottom:12px;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent-dim);border-radius:8px;padding:11px 18px;font-size:12px;color:var(--accent);z-index:300;display:none;animation:toastIn .25s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+@media(max-width:768px){
+  html,body{overflow:auto;}
+  .shell{flex-direction:column;}
+  .sidebar{display:none;}
+  .topbar{padding:0 14px;height:auto;min-height:52px;flex-wrap:wrap;}
+  .logo{font-size:13px;margin-right:10px;}
+  .cw-badge{display:none;}
+  .topbar-nav{order:3;width:100%;padding:6px 0;border-top:1px solid var(--border);overflow-x:auto;white-space:nowrap;margin:0;justify-content:flex-start;}
+  .nav-btn{font-size:11px;padding:5px 10px;}
+  .user-pill{margin-left:auto;}
+  .user-role{display:none;}
+  .main{padding:14px;overflow:visible;}
+  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat-val{font-size:24px;}
+  .g2{grid-template-columns:1fr;gap:12px;}
+  .page-hd{flex-direction:column;gap:10px;margin-bottom:16px;}
+  .page-hd>div:last-child{display:flex;gap:8px;flex-wrap:wrap;}
+  .page-title{font-size:18px;}
+  .page-sub{font-size:11px;}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:600px;}
+  th,td{padding:8px 10px;font-size:11px;}
+  .modal{width:96vw;padding:16px;max-height:85vh;}
+  .modal-title{font-size:16px;}
+  .zone-map{grid-template-columns:repeat(2,1fr);}
+  .match-item{grid-template-columns:1fr;}
+  .score{display:inline-flex;align-items:center;gap:6px;font-size:18px;margin-top:6px;}
+  .score span{display:inline;font-size:10px;}
+  .card-hd{flex-wrap:wrap;gap:8px;}
+  .listing-hd{flex-wrap:wrap;gap:8px;}
+  .prospect-panel{padding:12px;}
+  .email-draft{font-size:11px;}
+  .opp{flex-wrap:wrap;}
+  .opp-time{width:100%;margin-top:2px;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="logo-dot"></div>PROSPECTLAYER</div>
+  <span class="cw-badge">CUSHMAN &amp; WAKEFIELD EDMONTON</span>
+  <nav class="topbar-nav">
+    <button class="nav-btn active" onclick="show('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" onclick="show('prospects',this)">Prospects</button>
+    <button class="nav-btn" onclick="show('listings',this)">Listings</button>
+    <button class="nav-btn" onclick="show('opportunities',this)">Opportunities</button>
+  </nav>
+  <div class="user-pill">
+    <div><div class="user-name">Devan Ramage</div><div class="user-role">Head of Retail &middot; C&amp;W Edmonton</div></div>
+    <div class="avatar">DR</div>
+  </div>
+</header>
+
+<div class="shell">
+<aside class="sidebar">
+  <div class="nav-section-label">Overview</div>
+  <button class="side-btn active" onclick="show('dashboard',null,this)"><span class="side-icon">&#9672;</span>Dashboard</button>
+  <button class="side-btn" onclick="show('opportunities',null,this)"><span class="side-icon">&#9677;</span>Opportunities<span class="side-count">7</span></button>
+  <div class="nav-section-label">Prospecting</div>
+  <button class="side-btn" onclick="show('prospects',null,this)"><span class="side-icon">&#9678;</span>Prospects<span class="side-count">283</span></button>
+  <div class="nav-section-label">Listings</div>
+  <button class="side-btn" onclick="show('listings',null,this)"><span class="side-icon">&#9635;</span>Active Listings<span class="side-count">3</span></button>
+  <button class="side-btn" onclick="openListingModal()"><span class="side-icon">+</span>Add Listing</button>
+  <button class="run-btn-side" onclick="openRunModal()">&#9655; Run Pipeline</button>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view active">
+    <div class="page-hd">
+      <div><div class="page-title">Good morning, Devan.</div><div class="page-sub">ProspectLayer found these while you were offline &mdash; Edmonton &middot; Retail Division.</div></div>
+      <button class="btn btn-p" onclick="openRunModal()">&#9655; Run Pipeline</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total Prospects</div><div class="stat-val">283</div><div class="stat-delta">&#8593; +14 this week</div></div>
+      <div class="stat"><div class="stat-label">Verified Emails</div><div class="stat-val">152</div><div class="stat-delta">&#8593; +9 this week</div></div>
+      <div class="stat"><div class="stat-label">Active Listings</div><div class="stat-val">3</div><div class="stat-delta">&#8593; 8 new matches</div></div>
+      <div class="stat"><div class="stat-label">Opportunities</div><div class="stat-val">7</div><div class="stat-delta">&#8593; 3 new signals</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">New Listing Matches</div><button class="btn btn-g btn-sm" onclick="show('listings')">View All &rarr;</button></div>
+        <div class="card-body">
+          <div class="match-list">
+            <div class="match-item"><div><div class="match-biz">Westend Family Dental</div><div class="match-meta">Manning Town Centre &middot; 1,200 SF unit</div><div class="signals"><span class="sig sg">&#10003; Dental category</span><span class="sig sw">&#9889; Hiring 2 hygienists</span><span class="sig sg">&#10003; Lease expiring Q2</span></div></div><div><div class="score">94<span>match</span></div></div></div>
+            <div class="match-item"><div><div class="match-biz">Apollonia Dental Clinic</div><div class="match-meta">Manning Town Centre &middot; 1,200 SF unit</div><div class="signals"><span class="sig sg">&#10003; Dental category</span><span class="sig sg">&#10003; 4 yrs at address</span><span class="sig sg">&#9733; 4.8 stars</span></div></div><div><div class="score">88<span>match</span></div></div></div>
+            <div class="match-item"><div><div class="match-biz">Smilezone Dental</div><div class="match-meta">Five Corners &middot; 2,400 SF unit</div><div class="signals"><span class="sig sg">&#10003; Dental category</span><span class="sig sw">&#9889; 2nd location pattern</span></div></div><div><div class="score">81<span>match</span></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Opportunity Signals</div><button class="btn btn-g btn-sm" onclick="show('opportunities')">View All &rarr;</button></div>
+        <div class="card-body" style="padding:12px 18px;">
+          <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div><div class="opp-title">New Corp: Zenith Physiotherapy Inc.</div><div class="opp-detail">Registered Mar 4 &middot; No lease detected &middot; Medical</div></div><div class="opp-time">2d ago</div></div>
+          <div class="opp"><div class="opp-dot" style="background:var(--warn)"></div><div><div class="opp-title">Hiring spike: NW Dental Group</div><div class="opp-detail">3 new postings &middot; Est. outgrowing current space</div></div><div class="opp-time">3d ago</div></div>
+          <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div><div class="opp-title">Lease window: Kingsway Optometry</div><div class="opp-detail">Est. expiry Q3 2026 &middot; 5yr term</div></div><div class="opp-time">5d ago</div></div>
+          <div class="opp"><div class="opp-dot" style="background:var(--danger)"></div><div><div class="opp-title">Closed: Millwoods Law Centre</div><div class="opp-detail">Gone from 34 Ave &middot; Possible corridor vacancy</div></div><div class="opp-time">1w ago</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Last Run &mdash; Edmonton &middot; Dental</div><span style="font-size:11px;color:var(--accent)">&#10003; Completed Mar 6, 2026</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px;">
+          <div><div class="stat-label">Discovered</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">283</div></div>
+          <div><div class="stat-label">New This Run</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">14</div></div>
+          <div><div class="stat-label">Emails Found</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">152</div></div>
+          <div><div class="stat-label">Hunter Verified</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">37</div></div>
+          <div><div class="stat-label">Listing Matches</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">8</div></div>
+        </div>
+        <div style="margin-top:14px;">
+          <button class="btn btn-g btn-sm" onclick="toast('Downloading Edmonton_Dental_Mar2026.xlsx...')">&#8595; Download Excel</button>
+          <button class="btn btn-g btn-sm" style="margin-left:8px;" onclick="show('prospects')">View Prospects &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROSPECTS -->
+  <div id="view-prospects" class="view">
+    <div class="page-hd">
+      <div><div class="page-title">Prospects</div><div class="page-sub">Edmonton &middot; Dental &middot; 283 businesses &middot; Click any row to draft an outreach email with AI</div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-g btn-sm">&#9881; Filter</button>
+        <button class="btn btn-p btn-sm" onclick="toast('Downloading Edmonton_Dental_Mar2026.xlsx')">&#8595; Export Excel</button>
+      </div>
+    </div>
+    <div class="prospect-panel" id="draft-panel">
+      <div class="panel-title" id="draft-biz-title">Drafting email...</div>
+      <div class="gen-row"><div class="gen-dot"></div><span id="gen-label">AI is writing your outreach email...</span></div>
+      <div class="email-draft">
+        <div class="email-field"><span class="efl">TO</span> <span id="draft-to" style="color:var(--text)"></span></div>
+        <div class="email-field"><span class="efl">FROM</span> <span style="color:var(--text)">devan.ramage@cwedm.com</span></div>
+        <div class="email-field"><span class="efl">RE</span> <span id="draft-subject" style="color:var(--text)"></span></div>
+        <div class="email-body-text" id="draft-body"></div><span class="email-cursor" id="draft-cursor"></span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-p btn-sm" onclick="toast('Email copied to clipboard.')">Copy Email</button>
+        <button class="btn btn-g btn-sm" onclick="document.getElementById('draft-panel').classList.remove('open')">Dismiss</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Business</th><th>Address</th><th>Phone</th><th>Email</th><th>Rating</th><th>Source</th><th></th></tr></thead>
+          <tbody>
+            <tr class="prospect-row" onclick="draftEmail('Westend Family Dental','info@westendfamilydental.ca','Retail Space Opportunity — Manning Town Centre','top-rated dental office with 4.9 stars, currently hiring 2 hygienists which suggests they may be expanding or need more space soon, located at 8882 170 St NW')">
+              <td><strong>Westend Family Dental</strong></td><td style="color:var(--muted)">8882 170 St NW</td><td style="color:var(--muted)">780-444-1234</td><td><span class="etag ev">&#10003; info@westendfamilydental.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.9</span></td><td style="color:var(--muted);font-size:11px">Hunter</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('Westend Family Dental','info@westendfamilydental.ca','Retail Space Opportunity — Manning Town Centre','top-rated dental office, hiring 2 hygienists, possible expansion')">Draft &rarr;</button></td>
+            </tr>
+            <tr class="prospect-row" onclick="draftEmail('Apollonia Dental Clinic','hello@apolloniadental.ca','Prime Retail Opportunity in Edmonton','established 4.8 star dental clinic, has been at their current address for 4 years which means their lease may be coming up for renewal soon')">
+              <td><strong>Apollonia Dental Clinic</strong></td><td style="color:var(--muted)">5120 Rabbit Hill Rd</td><td style="color:var(--muted)">780-988-4567</td><td><span class="etag ev">&#10003; hello@apolloniadental.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.8</span></td><td style="color:var(--muted);font-size:11px">Hunter</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('Apollonia Dental Clinic','hello@apolloniadental.ca','Prime Retail Opportunity','4.8 stars, 4 years at current address, lease renewal likely coming')">Draft &rarr;</button></td>
+            </tr>
+            <tr class="prospect-row" onclick="draftEmail('Smilezone Dental','contact@smilezonedental.ca','Expansion Space — Edmonton Retail','growing dental practice showing a second location opening pattern, currently at 3803 Calgary Trail, likely needs 1800-2400 SF for expansion')">
+              <td><strong>Smilezone Dental</strong></td><td style="color:var(--muted)">3803 Calgary Trail</td><td style="color:var(--muted)">780-434-8901</td><td><span class="etag es">~ contact@smilezonedental.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.6</span></td><td style="color:var(--muted);font-size:11px">Scraped</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('Smilezone Dental','contact@smilezonedental.ca','Expansion Opportunity','2nd location pattern detected, needs 1800-2400 SF')">Draft &rarr;</button></td>
+            </tr>
+            <tr class="prospect-row" onclick="draftEmail('Kingsway Dental Centre','admin@kingswaydc.ca','Your Lease is Coming Up — Lets Talk','4.5 star dental centre at 10411 Kingsway Ave, their lease is estimated to expire in 2026 based on how long they have been at their current address')">
+              <td><strong>Kingsway Dental Centre</strong></td><td style="color:var(--muted)">10411 Kingsway Ave</td><td style="color:var(--muted)">780-477-3344</td><td><span class="etag ev">&#10003; admin@kingswaydc.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.5</span></td><td style="color:var(--muted);font-size:11px">Hunter</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('Kingsway Dental Centre','admin@kingswaydc.ca','Your Lease is Coming Up — Lets Talk','lease estimated expiry 2026, 4.5 stars')">Draft &rarr;</button></td>
+            </tr>
+            <tr class="prospect-row" onclick="draftEmail('NW Dental Group','info@nwdentalgroup.ca','Growing Fast? We Have Space for You','actively posting 3 new job listings including dental hygienists and an office admin, currently at 12455 137 Ave NW, growth signals suggest they may be outgrowing their space')">
+              <td><strong>NW Dental Group</strong></td><td style="color:var(--muted)">12455 137 Ave NW</td><td style="color:var(--muted)">780-457-0011</td><td><span class="etag es">~ info@nwdentalgroup.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.3</span></td><td style="color:var(--muted);font-size:11px">Scraped</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('NW Dental Group','info@nwdentalgroup.ca','Growing Fast? We Have Space','3 new job postings, likely outgrowing current space')">Draft &rarr;</button></td>
+            </tr>
+            <tr class="prospect-row" onclick="draftEmail('Align Orthodontics','contact@alignortho.ca','Premium Space for a Premium Practice','top-rated orthodontics practice with a 4.9 star rating, currently a single location which represents strong expansion potential')">
+              <td><strong>Align Orthodontics</strong></td><td style="color:var(--muted)">2603 Rabbit Hill Rd</td><td style="color:var(--muted)">780-988-2288</td><td><span class="etag ev">&#10003; contact@alignortho.ca</span></td><td><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="color:var(--muted);font-size:11px">4.9</span></td><td style="color:var(--muted);font-size:11px">Hunter</td><td><button class="btn btn-g btn-xs" onclick="event.stopPropagation();draftEmail('Align Orthodontics','contact@alignortho.ca','Premium Space for a Premium Practice','4.9 stars, single location, strong expansion potential')">Draft &rarr;</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:11px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--muted)">Showing 6 of 283 &middot; Click any row to draft outreach with AI</span>
+        <div style="display:flex;gap:6px;"><button class="btn btn-g btn-sm">&larr; Prev</button><button class="btn btn-g btn-sm">Next &rarr;</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTINGS -->
+  <div id="view-listings" class="view">
+    <div class="page-hd">
+      <div><div class="page-title">Listing Intelligence</div><div class="page-sub">Upload a listing &mdash; tenants match automatically every time the pipeline runs.</div></div>
+      <button class="btn btn-p" onclick="openListingModal()">+ Add Listing</button>
+    </div>
+    <div class="upload-zone" onclick="openListingModal()">
+      <div style="font-size:28px;margin-bottom:8px;">&#128196;</div>
+      <div style="font-size:13px;color:var(--muted)"><strong style="color:var(--text)">Drop a listing PDF or paste a LoopNet URL</strong><br>AI extracts sq ft, zoning, price, floor, and permitted uses automatically.</div>
+    </div>
+    <div class="listing-card">
+      <div class="listing-hd" onclick="toggleL(this)">
+        <div><div class="listing-name">Manning Town Centre &mdash; Unit C12</div><div class="listing-meta">1,200 SF &middot; Ground Floor &middot; $28/SF &middot; DC1 Zoning &middot; Medical / Retail</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="lbadge lb-active">&#9679; Active</span><span style="color:var(--accent);font-size:16px;" class="arr">&#9662;</span></div>
+      </div>
+      <div class="listing-body">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Watching: <span style="color:var(--accent)">Dental &middot; Medical &middot; Optometry &middot; Pharmacy</span> &nbsp;&middot;&nbsp; 3 new matches this week</div>
+        <div class="match-list">
+          <div class="match-item"><div><div class="match-biz">Westend Family Dental</div><div class="match-meta">8882 170 St NW &middot; &#9733; 4.9</div><div class="signals"><span class="sig sg">&#10003; Dental</span><span class="sig sw">&#9889; Hiring 2 hygienists</span><span class="sig sg">&#10003; Lease expiring Q2</span><span class="sig sg">&#10003; Verified email</span></div></div><div style="text-align:right"><div class="score">94<span>match</span></div><button class="btn btn-p btn-xs" style="margin-top:8px" onclick="show('prospects');setTimeout(()=>draftEmail('Westend Family Dental','info@westendfamilydental.ca','Retail Space Opportunity — Manning Town Centre','top dental office, hiring hygienists, lease expiring, perfect fit for your Manning Town Centre listing'),200)">Draft Email</button></div></div>
+          <div class="match-item"><div><div class="match-biz">Apollonia Dental Clinic</div><div class="match-meta">5120 Rabbit Hill Rd &middot; &#9733; 4.8</div><div class="signals"><span class="sig sg">&#10003; Dental</span><span class="sig sg">&#10003; 4 yrs at address</span><span class="sig sg">&#9733; Single location</span></div></div><div style="text-align:right"><div class="score">88<span>match</span></div><button class="btn btn-p btn-xs" style="margin-top:8px" onclick="show('prospects');setTimeout(()=>draftEmail('Apollonia Dental Clinic','hello@apolloniadental.ca','Prime Retail Opportunity — Manning Town Centre','established 4.8 star dental clinic, 4 years at current address, lease renewal likely'),200)">Draft Email</button></div></div>
+          <div class="match-item"><div><div class="match-biz">Kingsway Optometry</div><div class="match-meta">10411 Kingsway Ave &middot; &#9733; 4.5</div><div class="signals"><span class="sig sg">&#10003; Medical category</span><span class="sig sw">&#9889; Lease window Q3 2026</span><span class="sig sg">&#10003; Verified email</span></div></div><div style="text-align:right"><div class="score">76<span>match</span></div><button class="btn btn-g btn-xs" style="margin-top:8px" onclick="show('prospects');setTimeout(()=>draftEmail('Kingsway Optometry','info@kingswayoptometry.ca','Retail Space — Ideal for an Optometry Clinic','optometry clinic with lease estimated to expire Q3 2026, great candidate for Manning Town Centre'),200)">Draft Email</button></div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="btn btn-g btn-sm" onclick="toast('Drafting 3 outreach emails...')">Draft All 3</button>
+          <button class="btn btn-g btn-sm" onclick="toast('Marked as leased.')">Mark Leased</button>
+        </div>
+      </div>
+    </div>
+    <div class="listing-card">
+      <div class="listing-hd" onclick="toggleL(this)">
+        <div><div class="listing-name">The Hat at Five Corners &mdash; Suite 101</div><div class="listing-meta">2,400 SF &middot; Ground Floor &middot; $35/SF &middot; DC2 Zoning &middot; Retail / Restaurant / Medical</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="lbadge lb-active">&#9679; Active</span><span style="color:var(--accent);font-size:16px;" class="arr">&#9662;</span></div>
+      </div>
+      <div class="listing-body">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Watching: <span style="color:var(--accent)">Dental &middot; Physiotherapy &middot; Legal &middot; QSR</span> &nbsp;&middot;&nbsp; 5 new matches this week</div>
+        <div class="match-list">
+          <div class="match-item"><div><div class="match-biz">Smilezone Dental</div><div class="match-meta">3803 Calgary Trail &middot; &#9733; 4.6</div><div class="signals"><span class="sig sg">&#10003; Dental</span><span class="sig sw">&#9889; 2nd location pattern</span><span class="sig sg">&#10003; Est. 1,800&ndash;2,500 SF need</span></div></div><div style="text-align:right"><div class="score">81<span>match</span></div><button class="btn btn-p btn-xs" style="margin-top:8px" onclick="show('prospects');setTimeout(()=>draftEmail('Smilezone Dental','contact@smilezonedental.ca','Expansion Space — Five Corners Edmonton','growing dental practice showing 2nd location pattern, Five Corners is a perfect fit at 2400 SF'),200)">Draft Email</button></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin-top:12px;">+ 4 more matches &mdash; run physiotherapy pipeline to surface them</div>
+        <div style="margin-top:10px;"><button class="btn btn-g btn-sm" onclick="openRunModal()">Run Physio Pipeline &rarr;</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPPORTUNITIES -->
+  <div id="view-opportunities" class="view">
+    <div class="page-hd"><div><div class="page-title">Opportunity Signals</div><div class="page-sub">New businesses, hiring spikes, and lease windows &mdash; surfaced automatically.</div></div></div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">This Week &middot; 7 Signals</div></div>
+      <div class="card-body" style="padding:0 18px;">
+        <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div style="flex:1"><div class="opp-title">New Corp: Zenith Physiotherapy Inc.</div><div class="opp-detail">Registered Mar 4, 2026 &middot; No lease detected &middot; Medical / Physiotherapy</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('Zenith Physiotherapy Inc.','info@zenithphysio.ca','Welcome to Edmonton — Lets Find You the Right Space','brand new physiotherapy business just incorporated March 2026, no current lease, great opportunity to get in early'),200)">Draft Outreach</button></div></div><div class="opp-time">2d ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--warn)"></div><div style="flex:1"><div class="opp-title">Hiring spike: NW Dental Group</div><div class="opp-detail">3 new job postings &middot; Currently at 1,200 SF &middot; Est. outgrowing space</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('NW Dental Group','info@nwdentalgroup.ca','Growing Fast? We Have the Space','dental group actively hiring 3 new staff, likely outgrowing their current 1200 SF location'),200)">Draft Outreach</button></div></div><div class="opp-time">3d ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div style="flex:1"><div class="opp-title">Lease window: Kingsway Optometry</div><div class="opp-detail">Estimated lease expiry Q3 2026 &middot; 5yr term at current address</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('Kingsway Optometry','info@kingswayoptometry.ca','Your Lease is Coming Up — Lets Talk','optometry clinic with estimated lease expiry Q3 2026, perfect timing to start the conversation'),200)">Draft Outreach</button></div></div><div class="opp-time">5d ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div style="flex:1"><div class="opp-title">New Corp: Summit Legal Group</div><div class="opp-detail">Registered Feb 28, 2026 &middot; Legal services &middot; No lease detected</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('Summit Legal Group','info@summitlegal.ca','Welcome to Edmonton — Retail Space for a Growing Firm','brand new legal firm just incorporated, no current lease, great opportunity to introduce yourself early'),200)">Draft Outreach</button></div></div><div class="opp-time">1w ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--warn)"></div><div style="flex:1"><div class="opp-title">Hiring spike: Gateway Orthodontics</div><div class="opp-detail">2 orthodontist positions posted &middot; Single location &middot; Possible expansion</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('Gateway Orthodontics','info@gatewayortho.ca','Expansion Opportunity — Edmonton Retail Space','orthodontics practice hiring 2 orthodontists, currently single location, expansion signals are strong'),200)">Draft Outreach</button></div></div><div class="opp-time">1w ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--danger)"></div><div style="flex:1"><div class="opp-title">Closed: Millwoods Law Centre</div><div class="opp-detail">No longer at 34 Ave location &middot; Possible corridor vacancy opening up</div></div><div class="opp-time">1w ago</div></div>
+        <div class="opp"><div class="opp-dot" style="background:var(--accent)"></div><div style="flex:1"><div class="opp-title">Lease window: Riverbend Chiropractic</div><div class="opp-detail">Estimated expiry Q4 2026 &middot; 4.5 years at current address</div><div style="margin-top:8px"><button class="btn btn-g btn-xs" onclick="show('prospects');setTimeout(()=>draftEmail('Riverbend Chiropractic','info@riverbendchiro.ca','Your Lease Window is Approaching','chiropractic clinic with estimated Q4 2026 lease expiry, 4.5 years at current address'),200)">Draft Outreach</button></div></div><div class="opp-time">1w ago</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- PIPELINE MODAL -->
+<div class="overlay" id="modal-run" onclick="closeModal('modal-run')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">&#9655; Run Pipeline</div>
+    <div class="modal-sub">ProspectLayer sweeps Edmonton across 6 zones, enriches emails via Hunter.io, and scores every result against your active listings.</div>
+    <div id="run-setup">
+      <label class="form-label">Category</label>
+      <select class="form-select" id="run-cat"><option>Dental / Orthodontics</option><option>Physiotherapy</option><option>Optometry</option><option>Legal Services</option><option>Accounting / CPA</option><option>Chiropractic</option><option>Industrial / Warehouse</option></select>
+      <label class="form-label">Market</label>
+      <select class="form-select"><option>Edmonton, AB</option><option>Calgary, AB</option><option>Vancouver, BC</option><option>Toronto, ON</option></select>
+    </div>
+    <div id="run-running" style="display:none">
+      <div class="zone-map">
+        <div class="zone" id="z0"><div>Core Edmonton</div><div class="zone-count" id="zc0">&mdash;</div></div>
+        <div class="zone" id="z1"><div>NW Edmonton</div><div class="zone-count" id="zc1">&mdash;</div></div>
+        <div class="zone" id="z2"><div>NE Edmonton</div><div class="zone-count" id="zc2">&mdash;</div></div>
+        <div class="zone" id="z3"><div>SW Edmonton</div><div class="zone-count" id="zc3">&mdash;</div></div>
+        <div class="zone" id="z4"><div>SE Edmonton</div><div class="zone-count" id="zc4">&mdash;</div></div>
+        <div class="zone" id="z5"><div>St. Albert</div><div class="zone-count" id="zc5">&mdash;</div></div>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="prog-label" id="prog-label">0%</div></div>
+      <div class="terminal" id="run-log"></div>
+      <div id="run-done" style="display:none;animation:fadeUp .3s ease;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;"><div class="stat-label">Discovered</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">283</div></div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;"><div class="stat-label">Emails Found</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">152</div></div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;"><div class="stat-label">New This Run</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--white)">14</div></div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;"><div class="stat-label">Listing Matches</div><div style="font-family:var(--sans);font-size:22px;font-weight:700;color:var(--accent)">8</div></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-p" onclick="closeModal('modal-run');toast('Downloading Edmonton_Dental_Mar2026.xlsx...')">&#8595; Download Excel</button>
+          <button class="btn btn-g" onclick="show('prospects');closeModal('modal-run')">View Prospects &rarr;</button>
+          <button class="btn btn-g" onclick="show('listings');closeModal('modal-run')">View Matches &rarr;</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-g" id="modal-run-footer-cancel" onclick="closeModal('modal-run')">Cancel</button>
+      <button class="btn btn-p" id="run-start-btn" onclick="startRun()">&#9655; Start Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- LISTING MODAL -->
+<div class="overlay" id="modal-listing" onclick="closeModal('modal-listing')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Add Listing</div>
+    <div class="modal-sub">Paste a URL or upload a PDF &mdash; AI extracts the details and starts matching automatically.</div>
+    <label class="form-label">Listing URL (LoopNet, CoStar, cwedm.com)</label>
+    <input type="text" class="form-input" placeholder="https://cwedm.com/property/...">
+    <div style="text-align:center;font-size:11px;color:var(--dim);margin:4px 0 12px;">&mdash; or &mdash;</div>
+    <div class="upload-zone" style="padding:18px" onclick="toast('PDF uploaded. AI extracting details...')">
+      <div style="font-size:20px;margin-bottom:6px">&#128196;</div>
+      <div style="font-size:12px;color:var(--muted)">Click to upload listing PDF</div>
+    </div>
+    <label class="form-label">Tenant Categories to Watch</label>
+    <input type="text" class="form-input" placeholder="e.g. Dental, Medical, Optometry, QSR">
+    <div class="modal-footer">
+      <button class="btn btn-g" onclick="closeModal('modal-listing')">Cancel</button>
+      <button class="btn btn-p" onclick="closeModal('modal-listing');toast('Listing saved. Matching against 283 prospects...')">Extract &amp; Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+function show(name, topBtn, sideBtn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (topBtn) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); topBtn.classList.add('active'); }
+  if (sideBtn) { document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active')); sideBtn.classList.add('active'); }
+}
+
+function toggleL(hd) {
+  const body = hd.nextElementSibling;
+  const arr = hd.querySelector('.arr');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? 'block' : 'none';
+  arr.textContent = hidden ? '&#9662;' : '&#9656;';
+}
+
+function openRunModal() { document.getElementById('modal-run').classList.add('open'); }
+function openListingModal() { document.getElementById('modal-listing').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); if (id === 'modal-run') resetRun(); }
+
+const runLogs = [
+  ['tdim','&#9655; Pipeline: Edmonton &middot; Dental &mdash; starting'],
+  ['tdim','&nbsp;&nbsp;Connecting to Google Places API...'],
+  ['tok', '&#10003; API connected'],
+  ['tdim','&nbsp;&nbsp;Zone 1/6: Core Edmonton &mdash; scanning...'],
+  ['tok', '&#10003; Zone 1 complete: 61 businesses found'],
+  ['tdim','&nbsp;&nbsp;Zone 2/6: NW Edmonton &mdash; scanning...'],
+  ['tok', '&#10003; Zone 2 complete: 48 businesses found'],
+  ['tdim','&nbsp;&nbsp;Zone 3/6: NE Edmonton &mdash; scanning...'],
+  ['tok', '&#10003; Zone 3 complete: 52 businesses found'],
+  ['tdim','&nbsp;&nbsp;Zone 4/6: SW Edmonton &mdash; scanning...'],
+  ['tok', '&#10003; Zone 4 complete: 67 businesses found'],
+  ['tdim','&nbsp;&nbsp;Zone 5/6: SE Edmonton &mdash; scanning...'],
+  ['tok', '&#10003; Zone 5 complete: 43 businesses found'],
+  ['tdim','&nbsp;&nbsp;Zone 6/6: St. Albert &mdash; scanning...'],
+  ['tok', '&#10003; Zone 6 complete: 12 businesses found'],
+  ['tdim','&nbsp;&nbsp;Deduplicating across all zones...'],
+  ['tcounter','&nbsp;&nbsp;283 unique businesses identified'],
+  ['tdim','&nbsp;&nbsp;Upserting to database...'],
+  ['tok', '&#10003; 14 new, 269 updated'],
+  ['tdim','&nbsp;&nbsp;Running Hunter.io email enrichment...'],
+  ['tok', '&#10003; 37 emails verified via Hunter'],
+  ['tdim','&nbsp;&nbsp;Running scraper fallback...'],
+  ['tok', '&#10003; 121 additional emails scraped'],
+  ['twarn','&nbsp;&nbsp;6 dirty emails detected and removed'],
+  ['tcounter','&#10003; 152 clean verified emails total'],
+  ['tdim','&nbsp;&nbsp;Scoring against 3 active listings...'],
+  ['tok', '&#10003; Manning Town Centre: 3 matches'],
+  ['tok', '&#10003; Five Corners: 5 matches'],
+  ['tok', '&#10003; Nisku Industrial: 0 matches'],
+  ['tcounter','&#10003; 8 total listing matches found'],
+  ['tok', '&#9632; Pipeline complete. Excel ready.'],
+];
+
+let runIv = null;
+function startRun() {
+  document.getElementById('run-setup').style.display = 'none';
+  document.getElementById('run-running').style.display = 'block';
+  document.getElementById('run-start-btn').style.display = 'none';
+  const log = document.getElementById('run-log');
+  log.innerHTML = '';
+  [0,1,2,3,4,5].forEach(z => { document.getElementById('z'+z).className='zone'; document.getElementById('zc'+z).innerHTML='&mdash;'; });
+  document.getElementById('z0').classList.add('scanning');
+  let i = 0;
+  runIv = setInterval(() => {
+    if (i >= runLogs.length) {
+      clearInterval(runIv);
+      document.getElementById('prog-label').textContent = '100%';
+      document.getElementById('prog-fill').style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('run-done').style.display = 'block';
+        document.getElementById('modal-run-footer-cancel').style.display = 'none';
+      }, 400);
+      return;
+    }
+    const [cls, text] = runLogs[i];
+    log.innerHTML += '<div class="'+cls+'">'+text+'</div>';
+    log.scrollTop = log.scrollHeight;
+    const pct = Math.round(((i+1)/runLogs.length)*100);
+    document.getElementById('prog-fill').style.width = pct+'%';
+    document.getElementById('prog-label').textContent = pct+'%';
+    if (text.includes('Zone 1 complete')) { document.getElementById('z0').className='zone done'; document.getElementById('zc0').textContent='61'; document.getElementById('z1').classList.add('scanning'); }
+    if (text.includes('Zone 2 complete')) { document.getElementById('z1').className='zone done'; document.getElementById('zc1').textContent='48'; document.getElementById('z2').classList.add('scanning'); }
+    if (text.includes('Zone 3 complete')) { document.getElementById('z2').className='zone done'; document.getElementById('zc2').textContent='52'; document.getElementById('z3').classList.add('scanning'); }
+    if (text.includes('Zone 4 complete')) { document.getElementById('z3').className='zone done'; document.getElementById('zc3').textContent='67'; document.getElementById('z4').classList.add('scanning'); }
+    if (text.includes('Zone 5 complete')) { document.getElementById('z4').className='zone done'; document.getElementById('zc4').textContent='43'; document.getElementById('z5').classList.add('scanning'); }
+    if (text.includes('Zone 6 complete')) { document.getElementById('z5').className='zone done'; document.getElementById('zc5').textContent='12'; }
+    i++;
+  }, 280);
+}
+
+function resetRun() { if (runIv) { clearInterval(runIv); runIv = null; } document.getElementById('run-setup').style.display='block'; document.getElementById('run-running').style.display='none'; document.getElementById('run-start-btn').style.display='inline-flex'; document.getElementById('run-done').style.display='none'; document.getElementById('modal-run-footer-cancel').style.display='inline-flex'; }
+
+let draftAbort = null;
+async function draftEmail(bizName, email, subject, context) {
+  show('prospects');
+  const panel = document.getElementById('draft-panel');
+  panel.classList.add('open');
+  document.getElementById('draft-biz-title').textContent = 'Drafting email for ' + bizName;
+  document.getElementById('gen-label').textContent = 'AI is writing your outreach email...';
+  document.getElementById('draft-to').textContent = email;
+  document.getElementById('draft-subject').textContent = subject;
+  document.getElementById('draft-body').textContent = '';
+  document.getElementById('draft-cursor').style.display = 'inline-block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (draftAbort) draftAbort.abort();
+  draftAbort = new AbortController();
+
+  const prompt = 'You are Devan Ramage, Head of Retail at Cushman & Wakefield Edmonton — the premier commercial real estate brokerage in Edmonton. Write a short, warm, professional cold outreach email to ' + bizName + '.\n\nContext about this prospect: ' + context + '\n\nEmail subject: ' + subject + '\n\nWrite 3-4 short paragraphs. Be genuine and conversational — not corporate or salesy. Reference something specific about their business situation from the context. End with a low-pressure call to action like a quick 15-minute call. Sign off as Devan Ramage, Head of Retail, Cushman & Wakefield Edmonton, 780-702-9479. Do not include a subject line — just the email body starting with the greeting.';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', signal: draftAbort.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, stream: true, messages: [{ role: 'user', content: prompt }] })
+    });
+    const bodyEl = document.getElementById('draft-body');
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try { const j = JSON.parse(data); if (j.type === 'content_block_delta' && j.delta?.text) bodyEl.textContent += j.delta.text; } catch {}
+      }
+    }
+    document.getElementById('draft-cursor').style.display = 'none';
+    document.getElementById('gen-label').textContent = 'Email ready — copy or edit before sending';
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      document.getElementById('draft-body').textContent = 'Hi there,\n\nMy name is Devan Ramage — I\'m the Head of Retail at Cushman & Wakefield Edmonton, and I specialize in connecting growing businesses with the right retail spaces across the city.\n\nI came across ' + bizName + ' and noticed some signals that suggested you might be thinking about your space situation in the near future. Whether that\'s expansion, relocation, or just keeping your options open — I\'d love to have a conversation.\n\nWe have a few spaces right now that I think could be a strong fit for a business like yours. Nothing pushy — I just like to get these conversations started early so you have options when the time is right.\n\nWould you be open to a quick 15-minute call this week? Happy to work around your schedule.\n\nDevan Ramage\nHead of Retail\nCushman & Wakefield Edmonton\n780-702-9479';
+      document.getElementById('draft-cursor').style.display = 'none';
+      document.getElementById('gen-label').textContent = 'Email ready';
+    }
+  }
+}
+
+function toast(msg) { const t = document.getElementById('toast-el'); t.textContent = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+</script>
+</body>
+</html>
