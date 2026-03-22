@@ -158,18 +158,21 @@ export default function App() {
   // --- API ---
 
   async function fetchCategories() {
-    try { setCategories(await (await fetch('/api/categories')).json()); } catch {}
+    try { setCategories(await (await fetch('/api/categories', { cache: 'no-store' })).json()); } catch {}
   }
 
   async function fetchRuns() {
-    try { setRuns(await (await fetch('/api/runs')).json()); } catch {}
+    try {
+      const data = await (await fetch('/api/runs', { cache: 'no-store' })).json();
+      setRuns(data);
+    } catch {}
   }
 
   async function fetchStats() {
     try {
       const [bR, eR] = await Promise.all([
-        fetch('/api/businesses?limit=1'),
-        fetch('/api/businesses?hasEmail=true&limit=1'),
+        fetch('/api/businesses?limit=1', { cache: 'no-store' }),
+        fetch('/api/businesses?hasEmail=true&limit=1', { cache: 'no-store' }),
       ]);
       const bD = await bR.json();
       const eD = await eR.json();
@@ -180,7 +183,7 @@ export default function App() {
 
   async function fetchPipelineState() {
     try {
-      const data: RunState = await (await fetch('/api/pipeline')).json();
+      const data: RunState = await (await fetch('/api/pipeline', { cache: 'no-store' })).json();
       setRunState(data);
       if (data.status === 'running') {
         setRunModalOpen(true);
@@ -198,7 +201,7 @@ export default function App() {
       ...(emailOnly && { hasEmail: 'true' }),
     });
     try {
-      const data = await (await fetch(`/api/businesses?${params}`)).json();
+      const data = await (await fetch(`/api/businesses?${params}`, { cache: 'no-store' })).json();
       setBusinesses(data.data || []);
       setBusinessTotal(data.total || 0);
     } catch {}
@@ -207,7 +210,21 @@ export default function App() {
   // --- Polling ---
 
   function startPolling() {
-    if (pollingRef.current) return;
+    // Clear any existing polling first
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    // Immediate first poll
+    (async () => {
+      try {
+        const data: RunState = await (await fetch('/api/pipeline')).json();
+        setRunState(data);
+        parseLogsForZones(data.log);
+        setProgress(estimateProgress(data.log));
+      } catch {}
+    })();
+    // Then poll every 2s
     pollingRef.current = setInterval(async () => {
       try {
         const data: RunState = await (await fetch('/api/pipeline')).json();
@@ -224,7 +241,7 @@ export default function App() {
         clearInterval(pollingRef.current!);
         pollingRef.current = null;
       }
-    }, 3000);
+    }, 2000);
   }
 
   function parseLogsForZones(logs: string[]) {
@@ -274,8 +291,6 @@ export default function App() {
         body: JSON.stringify({ category: runCategory, city: runCity }),
       });
       if (res.ok) {
-        const st = await (await fetch('/api/pipeline')).json();
-        setRunState(st);
         startPolling();
       } else {
         const d = await res.json();
@@ -358,6 +373,7 @@ export default function App() {
   const lastRun = runs[0];
   const bizPages = Math.ceil(businessTotal / 50) || 1;
   const pipelineDone = runPhase === 'running' && (runState.status === 'complete' || runState.status === 'failed');
+
 
   // ==============================
   // RENDER

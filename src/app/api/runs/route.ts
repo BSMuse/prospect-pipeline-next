@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db/client';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const { rows } = await pool.query(`
     SELECT id, category, city, status,
