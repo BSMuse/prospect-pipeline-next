@@ -384,7 +384,7 @@ export default function App() {
       {/* ──── TOPBAR ──── */}
       <header className="topbar">
         <div className="logo-group">
-          <div className="logo"><div className="logo-dot" />PROSPECTLAYER</div>
+          <div className="logo"><div className="logo-dot" />BROKORD</div>
           <div className="logo-divider" />
           <div className="logo-org">CUSHMAN &amp; WAKEFIELD<br />EDMONTON</div>
         </div>
@@ -443,6 +443,7 @@ export default function App() {
               <div className="page-hd">
                 <div>
                   <div className="page-title">{greeting()}, Devan.</div>
+                  <div className="page-sub" style={{ fontStyle: 'italic', color: 'var(--accent)', marginBottom: 4 }}>Order your pipeline. Own your market.</div>
                   <div className="page-sub">
                     {lastRun
                       ? `Last pipeline: ${formatCat(lastRun.category)} · ${lastRun.city} — ${lastRun.status}`
@@ -1084,7 +1085,7 @@ export default function App() {
         <div className="overlay" onClick={closeRunModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-title">▷ Run Pipeline</div>
-            <div className="modal-sub">ProspectLayer sweeps Edmonton across {ZONE_NAMES.length} zones, enriches emails via Hunter.io, and scores every result against your active listings.</div>
+            <div className="modal-sub">Brokord sweeps Edmonton across {ZONE_NAMES.length} zones, enriches emails via Hunter.io, and scores every result against your active listings.</div>
 
             {runPhase === 'setup' && (
               <>

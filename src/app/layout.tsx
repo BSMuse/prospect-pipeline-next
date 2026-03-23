@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ProspectLayer — Devan Ramage · C&W Edmonton',
+  title: 'BROKORD — Order your pipeline. Own your market.',
   description: 'Commercial broker lead pipeline',
 };
 

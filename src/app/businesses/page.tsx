@@ -13,7 +13,7 @@ type Business = {
 function Sidebar({ active }: { active: string }) {
   return (
     <nav className="sidebar">
-      <div className="sidebar-logo">Prospect<span>Layer</span></div>
+      <div className="sidebar-logo">Brok<span>ord</span></div>
       <Link href="/" className={`nav-item ${active === 'dashboard' ? 'active' : ''}`}>
         ▸ Dashboard
       </Link>
